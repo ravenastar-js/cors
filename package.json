@@ -1,0 +1,30 @@
+{
+  "name": "@ravenastar/cors-proxy",
+  "version": "1.0.0",
+  "description": "🌐 CORS Proxy para Cloudflare Workers com rate limit",
+  "main": "src/index.js",
+  "scripts": {
+    "dev": "wrangler dev src/index.js",
+    "deploy": "wrangler deploy src/index.js"
+  },
+  "keywords": [
+    "cors",
+    "proxy",
+    "cloudflare",
+    "workers",
+    "rate-limit"
+  ],
+  "author": "RavenaStar",
+  "license": "MIT",
+  "devDependencies": {
+    "wrangler": "^3.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ravenastar-js/cors.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ravenastar-js/cors/issues"
+  },
+  "homepage": "https://github.com/ravenastar-js/cors#readme"
+}
