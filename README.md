@@ -526,7 +526,7 @@ Este projeto está licenciado sob a **Licença MIT** — veja o arquivo [LICENSE
 
 ## 🌟 Star History
 
-<a href="https://www.star-history.com/#ravenastar-js/cors&type=date&legend=top-left">
+<a href="https://www.star-history.com/?repos=ravenastar-js/cors&type=date&legend=top-left">
  <picture>
    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/image?repos=ravenastar-js/cors&type=date&theme=dark&legend=top-left" />
    <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/image?repos=ravenastar-js/cors&type=date&legend=top-left" />
