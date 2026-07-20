@@ -9,9 +9,6 @@
 <p align="center">
   <img src="https://img.shields.io/badge/Cloudflare-Workers-F38020?logo=cloudflare&logoColor=white" alt="Cloudflare Workers" />
   <img src="https://img.shields.io/badge/License-MIT-green.svg" alt="MIT License" />
-  <img src="https://img.shields.io/badge/Status-Ativo-brightgreen" alt="Status: Ativo" />
-  <img src="https://img.shields.io/badge/Configuração-Zero%20Config-blueviolet" alt="Zero Config" />
-  <img src="https://img.shields.io/badge/PRs-bem--vindos-ff69b4.svg" alt="PRs Welcome" />
   <img src="https://img.shields.io/github/stars/ravenastar-js/cors?style=social" alt="GitHub Stars" />
 </p>
 
