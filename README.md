@@ -528,9 +528,9 @@ Este projeto está licenciado sob a **Licença MIT** — veja o arquivo [LICENSE
 
 <a href="https://www.star-history.com/?repos=ravenastar-js%2Fcors&type=date&legend=top-left">
  <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=ravenastar-js/cors&type=date&theme=dark&legend=top-left&sealed_token=cKRJhvs1KMyCxfSxgHD0uGkp1QqqQaYHq2suz1l1NHsoxrNJfmry4Y18S1pIc1H6aviPWXKa_MhNxVh2S_rU3EGBSbnDfyIVWtDDfwYQxD_3QV0nQUXJIA2xJv0SwRLHJT3VqPJUOq0ov5oD87YU7gmvVZeKT9AqubmOz6L8HEf4VQEsuc56eb_ztyWH" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=ravenastar-js/cors&type=date&legend=top-left&sealed_token=cKRJhvs1KMyCxfSxgHD0uGkp1QqqQaYHq2suz1l1NHsoxrNJfmry4Y18S1pIc1H6aviPWXKa_MhNxVh2S_rU3EGBSbnDfyIVWtDDfwYQxD_3QV0nQUXJIA2xJv0SwRLHJT3VqPJUOq0ov5oD87YU7gmvVZeKT9AqubmOz6L8HEf4VQEsuc56eb_ztyWH" />
-   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=ravenastar-js/cors&type=date&legend=top-left&sealed_token=cKRJhvs1KMyCxfSxgHD0uGkp1QqqQaYHq2suz1l1NHsoxrNJfmry4Y18S1pIc1H6aviPWXKa_MhNxVh2S_rU3EGBSbnDfyIVWtDDfwYQxD_3QV0nQUXJIA2xJv0SwRLHJT3VqPJUOq0ov5oD87YU7gmvVZeKT9AqubmOz6L8HEf4VQEsuc56eb_ztyWH" />
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=ravenastar-js/cors&type=date&theme=dark&legend=top-left&sealed_token=XFCrpNrYD7uK9HKciWIjtvP5KQP53BmX9x4K91O6qENBzityZo91aAtYLBHAZ66KHHLoDHIwbBlNl2yBIQTzPSHAGXIsIASa_h_usq0jFUC_s7cQANMDcQ" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=ravenastar-js/cors&type=date&legend=top-left&sealed_token=XFCrpNrYD7uK9HKciWIjtvP5KQP53BmX9x4K91O6qENBzityZo91aAtYLBHAZ66KHHLoDHIwbBlNl2yBIQTzPSHAGXIsIASa_h_usq0jFUC_s7cQANMDcQ" />
+   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=ravenastar-js/cors&type=date&legend=top-left&sealed_token=XFCrpNrYD7uK9HKciWIjtvP5KQP53BmX9x4K91O6qENBzityZo91aAtYLBHAZ66KHHLoDHIwbBlNl2yBIQTzPSHAGXIsIASa_h_usq0jFUC_s7cQANMDcQ" />
  </picture>
 </a>
 
