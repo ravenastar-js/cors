@@ -528,9 +528,9 @@ Este projeto está licenciado sob a **Licença MIT** — veja o arquivo [LICENSE
 
 <a href="https://www.star-history.com/?repos=ravenastar-js%2Fcors&type=date&legend=top-left">
  <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=ravenastar-js/cors&type=date&theme=dark&legend=top-left&sealed_token=Y5SzFPKb6DMNPxJ8EhrvfPGOnD8jxOZWGjlCJ4sDvlw0jIAGxRvhTDhsUlZjGaTfyNFBJRUHdH4rB--E1I5YV_2HdMIuFGwKOYbxDOizNsGCSWmBg_lGEf9cs11Q9Yd-nt-BE4UliSzsuT9U2m5rEnUZD_qG7tMotG7VvwhQ1GeGOg" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=ravenastar-js/cors&type=date&legend=top-left&sealed_token=Y5SzFPKb6DMNPxJ8EhrvfPGOnD8jxOZWGjlCJ4sDvlw0jIAGxRvhTDhsUlZjGaTfyNFBJRUHdH4rB--E1I5YV_2HdMIuFGwKOYbxDOizNsGCSWmBg_lGEf9cs11Q9Yd-nt-BE4UliSzsuT9U2m5rEnUZD_qG7tMotG7VvwhQ1GeGOg" />
-   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=ravenastar-js/cors&type=date&legend=top-left&sealed_token=Y5SzFPKb6DMNPxJ8EhrvfPGOnD8jxOZWGjlCJ4sDvlw0jIAGxRvhTDhsUlZjGaTfyNFBJRUHdH4rB--E1I5YV_2HdMIuFGwKOYbxDOizNsGCSWmBg_lGEf9cs11Q9Yd-nt-BE4UliSzsuT9U2m5rEnUZD_qG7tMotG7VvwhQ1GeGOg" />
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=ravenastar-js/cors&type=date&theme=dark&legend=top-left&sealed_token=vcgNt8vCuBQl41g2eJDewZIHCczqVzwZxFBQsTKMT3BeK11m4fIijxZP0cthAsgqcMUlVd51AC3PMwhE0e_DtChcOfJt8QwDni3SpbzYaos7jsinC_ulgqIeMm1gTVogQX4NYDsIw1qx9mfzmRzmlhl1FNDHo6mV-9v46FJq38t_f9yq-qSeu1wzR-Gr" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=ravenastar-js/cors&type=date&legend=top-left&sealed_token=vcgNt8vCuBQl41g2eJDewZIHCczqVzwZxFBQsTKMT3BeK11m4fIijxZP0cthAsgqcMUlVd51AC3PMwhE0e_DtChcOfJt8QwDni3SpbzYaos7jsinC_ulgqIeMm1gTVogQX4NYDsIw1qx9mfzmRzmlhl1FNDHo6mV-9v46FJq38t_f9yq-qSeu1wzR-Gr" />
+   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=ravenastar-js/cors&type=date&legend=top-left&sealed_token=vcgNt8vCuBQl41g2eJDewZIHCczqVzwZxFBQsTKMT3BeK11m4fIijxZP0cthAsgqcMUlVd51AC3PMwhE0e_DtChcOfJt8QwDni3SpbzYaos7jsinC_ulgqIeMm1gTVogQX4NYDsIw1qx9mfzmRzmlhl1FNDHo6mV-9v46FJq38t_f9yq-qSeu1wzR-Gr" />
  </picture>
 </a>
 
