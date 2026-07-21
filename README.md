@@ -526,11 +526,11 @@ Este projeto está licenciado sob a **Licença MIT** — veja o arquivo [LICENSE
 
 ## 🌟 Star History
 
-<a href="https://www.star-history.com/?repos=ravenastar-js/cors&type=date&legend=top-left">
+<a href="https://www.star-history.com/?repos=ravenastar-js%2Fcors&type=date&legend=top-left">
  <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/image?repos=ravenastar-js/cors&type=date&theme=dark&legend=top-left" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/image?repos=ravenastar-js/cors&type=date&legend=top-left" />
-   <img alt="Star History Chart" src="https://api.star-history.com/image?repos=ravenastar-js/cors&type=date&legend=top-left" />
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=ravenastar-js/cors&type=date&theme=dark&legend=top-left&sealed_token=Y5SzFPKb6DMNPxJ8EhrvfPGOnD8jxOZWGjlCJ4sDvlw0jIAGxRvhTDhsUlZjGaTfyNFBJRUHdH4rB--E1I5YV_2HdMIuFGwKOYbxDOizNsGCSWmBg_lGEf9cs11Q9Yd-nt-BE4UliSzsuT9U2m5rEnUZD_qG7tMotG7VvwhQ1GeGOg" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=ravenastar-js/cors&type=date&legend=top-left&sealed_token=Y5SzFPKb6DMNPxJ8EhrvfPGOnD8jxOZWGjlCJ4sDvlw0jIAGxRvhTDhsUlZjGaTfyNFBJRUHdH4rB--E1I5YV_2HdMIuFGwKOYbxDOizNsGCSWmBg_lGEf9cs11Q9Yd-nt-BE4UliSzsuT9U2m5rEnUZD_qG7tMotG7VvwhQ1GeGOg" />
+   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=ravenastar-js/cors&type=date&legend=top-left&sealed_token=Y5SzFPKb6DMNPxJ8EhrvfPGOnD8jxOZWGjlCJ4sDvlw0jIAGxRvhTDhsUlZjGaTfyNFBJRUHdH4rB--E1I5YV_2HdMIuFGwKOYbxDOizNsGCSWmBg_lGEf9cs11Q9Yd-nt-BE4UliSzsuT9U2m5rEnUZD_qG7tMotG7VvwhQ1GeGOg" />
  </picture>
 </a>
 
