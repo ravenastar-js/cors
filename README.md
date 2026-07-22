@@ -1,3 +1,31 @@
+<details>
+<summary> ─── AVISO ⚠️ <strong>ᴄʟɪǫᴜᴇ ᴀǫᴜɪ</strong></summary>
+<br>
+
+> Este proxy implementa **filtros básicos** (whitelist de origem, bloqueio de User-Agent, bloqueio de destinos privados/SSRF, validação de redirecionamentos e rate limit) que impedem uso **trivial, acidental ou automatizado de forma descuidada**, como scripts genéricos, scanners simples ou chamadas feitas por engano de domínios não autorizados.
+>
+> Esses filtros **não constituem autenticação forte** e não impedem um atacante com conhecimento técnico e intenção deliberada de contornar as proteções. Especificamente:
+>
+> - **`ALLOWED_ORIGINS` e `BLOCKED_AGENTS` dependem dos headers `Origin` e `User-Agent`**, que são definidos pelo próprio cliente. Dentro de um navegador, o JavaScript não consegue forjar o `Origin`, o que torna essa checagem eficaz nesse contexto. Fora dele, via `curl`, scripts ou qualquer ferramenta HTTP, esses valores podem ser declarados livremente para imitar uma requisição legítima, tornando essas duas camadas contornáveis com uma única linha de comando.
+> - Este script **não possui nenhuma camada de autenticação**. Sem isso, qualquer pessoa que descubra a URL do Worker e conheça um domínio da whitelist pode reproduzir uma requisição válida manualmente.
+>
+> As proteções que **continuam eficazes independentemente de quem faz a chamada**, por não dependerem de dados informados pelo cliente, são:
+>
+> - **Bloqueio de hosts de destino** (`_isHostBlocked`), que impede acesso a IPs privados, loopback e proxies encadeados (proteção contra SSRF);
+> - **Validação de redirecionamentos**, em que cada `Location` é verificado antes de ser seguido;
+> - **Rate limit por IP**, baseado em `CF-Connecting-IP`, header injetado pela própria Cloudflare e não manipulável pelo cliente.
+>
+> Para cenários que exigem controle de acesso real (restringir quem consome a API por trás do proxy, não apenas reduzir ruído), recomenda-se adicionar:
+>
+> - Autenticação de usuário com tokens de sessão de curta duração;
+> - Um backend intermediário que retenha qualquer segredo do lado do servidor, nunca exposto ao cliente.
+>
+> Use este projeto com essa limitação em mente. Ele foi desenhado para reduzir abuso trivial e uso acidental, não para servir como camada de segurança crítica ou controle de acesso definitivo.
+
+</details>
+
+---
+
 # 🌐 CORS Proxy para Cloudflare Workers
 
 <p align="center">
