@@ -12,7 +12,7 @@
   <img src="https://img.shields.io/github/stars/ravenastar-js/cors?style=social" alt="GitHub Stars" />
 </p>
 
-> Proxy CORS robusto para Cloudflare Workers com rate limit, whitelist de origens, bloqueio de bots e cache opcional via KV.
+> Proxy CORS robusto para Cloudflare Workers com rate limit, whitelist de origens, bloqueio de bots, proteção contra SSRF e cache opcional via KV.
 
 > ## ⚠️ Antes de hospedar, leia isto
 > O proxy vem, por padrão, com domínios de **exemplo** na whitelist (`ALLOWED_ORIGINS`), dentro de `src/index.js`:
@@ -25,7 +25,7 @@
 >     'http://localhost:8080'
 > ]
 > ```
-> Se você fizer o deploy **sem alterar essa lista**, nenhuma aplicação sua vai conseguir usar o proxy — só os domínios de exemplo (que não são seus) estarão liberados.
+> Se você fizer o deploy **sem alterar essa lista**, nenhuma aplicação sua vai conseguir usar o proxy — só os domínios de exemplo (que não são seus) estarão liberados. A comparação de origem é feita por **protocolo + host exatos**, então não adianta usar um domínio parecido — precisa ser idêntico ao configurado.
 > ⚠️ **O botão de [Deploy Rápido](#-deploy-rápido-recomendado) publica o Worker direto na Cloudflare, sem abrir o código para edição antes.** Se você for usar esse botão, edite `ALLOWED_ORIGINS` **depois do deploy**, direto no editor do dashboard da Cloudflare (veja o passo a passo em [Configuração](#-configuração)). Para editar **antes** de publicar, prefira o [Deploy Manual pelo Dashboard](#-deploy-manual-pelo-dashboard) ou o [Deploy via Wrangler CLI](#-deploy-via-wrangler-cli).
 
 ---
@@ -95,15 +95,16 @@ Ele atua como um **intermediário**: sua aplicação faz requisições para o Wo
 
 | Funcionalidade | Descrição |
 |----------------|-----------|
-| 🔒 **Whitelist de origens** | Apenas domínios autorizados podem usar o proxy |
-| ⏱️ **Rate limit por IP** | Limite de requisições por IP, configurável em segundos |
-| 🛡️ **Bloqueio de bots** | User-Agents conhecidos (curl, Postman, etc.) são bloqueados |
+| 🔒 **Whitelist de origens** | Apenas domínios autorizados podem usar o proxy, com comparação exata de protocolo + host |
+| ⏱️ **Rate limit por IP** | Limite de requisições por IP, configurável em segundos, baseado apenas no IP real informado pela Cloudflare |
+| 🛡️ **Bloqueio de bots** | User-Agents conhecidos (curl, Postman, etc.) são bloqueados como camada extra |
+| 🚫 **Proteção contra SSRF** | Bloqueia requisições para IPs privados, loopback e hosts internos |
+| 🔁 **Validação de redirects** | Cada redirecionamento é validado manualmente antes de ser seguido |
 | 🐱 **HTTP.cat integrado** | Respostas de erro acompanhadas de gatos ilustrativos |
 | 🔄 **Suporte GET/POST** | Proxy completo para requisições GET e POST |
 | ⚡ **CORS nativo** | Headers CORS configurados automaticamente em toda resposta |
 | 💾 **KV opcional** | Rate limit persistente entre deploys, com fallback automático em memória |
 | 🚀 **Alta performance** | Executado na borda (edge) da Cloudflare, próximo do usuário |
-| 📦 **Zero configuração** | Funciona imediatamente após o deploy, sem passos extras |
 
 ---
 
@@ -119,13 +120,15 @@ sequenceDiagram
     participant A as 🌐 API de Destino<br/>(Externa)
 
     F->>W: Requisição (GET/POST) + Origin
-    W->>W: Verifica whitelist de origens
+    W->>W: Verifica whitelist de origens (match exato)
     W->>W: Verifica User-Agent (bloqueio de bots)
+    W->>W: Valida host de destino (bloqueio de IPs privados/loopback)
     W->>W: Aplica rate limit por IP (KV ou memória)
 
     alt Requisição permitida
         W->>A: Encaminha requisição
-        A-->>W: Resposta da API
+        A-->>W: Resposta da API (ou redirect)
+        W->>W: Valida host de cada redirect antes de seguir
         W-->>F: Resposta + headers CORS
     else Bloqueada
         W-->>F: Erro (403 / 429) + imagem HTTP.cat
@@ -135,11 +138,12 @@ sequenceDiagram
 ### Fluxo da Requisição
 
 1. O **frontend** faz uma requisição para o Worker, informando a URL de destino via parâmetro `url`.
-2. O **Worker verifica a origem** da requisição contra a whitelist configurada.
-3. Em seguida, verifica se o **User-Agent** não pertence à lista de bots/clientes bloqueados.
-4. Aplica o **rate limit por IP**, usando KV (se configurado) ou memória local.
-5. Se tudo estiver certo, o Worker **encaminha a requisição** para a API de destino.
-6. Por fim, **retorna a resposta** ao frontend já com os headers CORS corretos.
+2. O **Worker verifica a origem** da requisição contra a whitelist configurada, exigindo protocolo e host idênticos.
+3. Em seguida, verifica se o **User-Agent** não pertence à lista de bots/clientes bloqueados (proteção auxiliar).
+4. O Worker **valida o host de destino**, recusando IPs privados, loopback e hosts internamente reservados.
+5. Aplica o **rate limit por IP**, usando o IP real informado pela Cloudflare, com KV (se configurado) ou memória local.
+6. Se tudo estiver certo, o Worker **encaminha a requisição** para a API de destino, seguindo e validando redirecionamentos manualmente.
+7. Por fim, **retorna a resposta** ao frontend já com os headers CORS corretos.
 
 ---
 
@@ -204,13 +208,13 @@ Edite o objeto `CONFIG` no `src/index.js`:
 const CONFIG = {
     RATE_WINDOW: 60,        // Janela de tempo em segundos
     RATE_LIMIT: 30,         // Requisições máximas por janela
-    ALLOWED_ORIGINS: [      // Domínios autorizados (whitelist)
+    ALLOWED_ORIGINS: [      // Domínios autorizados (whitelist, match exato)
         'https://seudominio.com',
         'https://www.seudominio.com',
         'http://localhost:3000',
         'http://localhost:5500'
     ],
-    BLOCKED_AGENTS: [       // User-Agents bloqueados
+    BLOCKED_AGENTS: [       // User-Agents bloqueados (proteção auxiliar)
         'Postman',
         'curl',
         'python-requests',
@@ -219,7 +223,13 @@ const CONFIG = {
         'axios',
         'insomnia',
         'bruno'
-    ]
+    ],
+    BLOCKED_HOSTS: [        // Hosts de destino bloqueados (match exato de hostname)
+        'proxy.corsfix.com',
+        'api.allorigins.win',
+        'cors.isomorphic-git.org'
+    ],
+    MAX_REDIRECTS: 5        // Máximo de redirects seguidos manualmente
 };
 ```
 
@@ -227,8 +237,10 @@ const CONFIG = {
 |---|---|---|
 | `RATE_WINDOW` | `number` | Duração da janela de contagem do rate limit, em segundos |
 | `RATE_LIMIT` | `number` | Quantidade máxima de requisições permitidas dentro da janela |
-| `ALLOWED_ORIGINS` | `string[]` | Lista de domínios autorizados a usar o proxy |
+| `ALLOWED_ORIGINS` | `string[]` | Lista de domínios autorizados a usar o proxy (comparados por protocolo + host exatos) |
 | `BLOCKED_AGENTS` | `string[]` | Trechos de User-Agent que, se detectados, bloqueiam a requisição |
+| `BLOCKED_HOSTS` | `string[]` | Hostnames de destino bloqueados, além de IPs privados/loopback bloqueados automaticamente |
+| `MAX_REDIRECTS` | `number` | Quantidade máxima de redirecionamentos seguidos antes de recusar a requisição |
 
 > 🚨 **Obrigatório:** `ALLOWED_ORIGINS` vem preenchido apenas com domínios de **exemplo**. Substitua todos eles pelos domínios reais da sua aplicação (e remova os `localhost` de exemplo se não forem usados) antes — ou logo depois — de colocar o Worker no ar. Sem esse ajuste, o proxy bloqueia todas as origens que não sejam as de exemplo, com erro `403 - 🔒 Origem não autorizada`.
 
@@ -278,12 +290,14 @@ https://seu-worker.workers.dev/?url=https://api-destino.com/endpoint
 curl "https://seu-worker.workers.dev/?url=https://api.github.com/users/octocat"
 ```
 
+> Nota: requisições feitas diretamente via `curl` são bloqueadas pelo filtro de User-Agent por padrão. Use um `-A` customizado apenas para testes locais controlados.
+
 ### Requisição POST (curl)
 
 ```bash
 curl -X POST "https://seu-worker.workers.dev/?url=https://api.exemplo.com/dados" \
   -H "Content-Type: application/json" \
-  -d '{"nome": "João", "email": "joao@email.com"}'
+  -d '{"nome": "Fulano", "email": "fulano@email.com"}'
 ```
 
 ### Frontend (JavaScript)
@@ -429,11 +443,15 @@ O Worker inclui os seguintes headers em todas as respostas:
 
 ### Proteções Implementadas
 
-- ✅ **Whitelist de origens** — apenas domínios autorizados podem usar o proxy
-- ✅ **Rate limit por IP** — previne abuso e uso excessivo
-- ✅ **Bloqueio de bots** — User-Agents conhecidos (curl, Postman, etc.) são recusados
-- ✅ **Proteção contra proxy encadeado** — impede que o Worker seja usado como relay para outro proxy
-- ✅ **Validação de URL** — apenas URLs `http://` ou `https://` são aceitas
+- ✅ **Whitelist de origens com match exato** — compara protocolo e host completos, evitando bypass por domínios parecidos ou sufixos maliciosos
+- ✅ **Rate limit por IP real** — usa apenas o IP informado pela própria Cloudflare (`CF-Connecting-IP`), não confiando em headers que o cliente pode forjar
+- ✅ **Bloqueio de bots** — User-Agents conhecidos (curl, Postman, etc.) são recusados como camada auxiliar, não como única defesa
+- ✅ **Proteção contra SSRF** — recusa requisições para IPs privados (`10.x`, `172.16-31.x`, `192.168.x`), loopback (`127.x`, `::1`) e hosts internos (`localhost`, `.local`)
+- ✅ **Proteção contra proxy encadeado** — bloqueia hosts de destino específicos por comparação exata de hostname
+- ✅ **Validação de redirecionamentos** — cada `Location` de redirect é verificado antes de ser seguido, com limite máximo de redirects
+- ✅ **Validação de URL** — apenas URLs `http://` ou `https://` bem formadas são aceitas
+
+> ⚠️ **Importante:** o bloqueio de User-Agent é uma camada auxiliar, não uma garantia de segurança. Qualquer cliente HTTP pode definir um User-Agent arbitrário, então não trate essa lista como controle de acesso — a whitelist de origem e a validação de destino são as defesas principais.
 
 ---
 
@@ -466,7 +484,7 @@ Sim. Você pode enviar headers de autenticação (como `Authorization`) nas requ
 <details>
 <summary><strong>O rate limit é por IP ou por usuário?</strong></summary><br>
 
-O rate limit é aplicado por IP do cliente, garantindo que cada usuário tenha seu próprio limite independente.
+O rate limit é aplicado por IP do cliente (obtido via `CF-Connecting-IP`), garantindo que cada usuário tenha seu próprio limite independente.
 </details>
 
 <details>
@@ -491,6 +509,12 @@ O Worker retorna um erro `429 Too Many Requests`, junto com o tempo de espera re
 <summary><strong>Como faço para limpar o cache do KV?</strong></summary><br>
 
 O cache do KV expira automaticamente conforme a janela configurada, mas também pode ser limpo manualmente pelo dashboard da Cloudflare.
+</details>
+
+<details>
+<summary><strong>Posso usar o proxy para acessar endereços internos da minha rede?</strong></summary><br>
+
+Não. O Worker bloqueia automaticamente requisições para IPs privados, loopback e hosts internos (`localhost`, `192.168.x`, `10.x`, etc.), como proteção contra SSRF.
 </details>
 
 <details>
