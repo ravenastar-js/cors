@@ -1,7 +1,7 @@
 /**
  * 🌐 Cloudflare Worker - CORS Proxy com Rate Limit
  * @author RavenaStar
- * @version 1.0.0
+ * @version 1.1.0
  * @license MIT
  * @description Proxy CORS para Cloudflare Workers com rate limit por IP
  * @docs https://developers.cloudflare.com/workers/
@@ -16,7 +16,7 @@ const CONFIG = {
     RATE_WINDOW: 60,
     /** 🚦 Limite de requisições por IP por janela */
     RATE_LIMIT: 30,
-    /** 🛡️ Domínios autorizados a usar o proxy (whitelist) */
+    /** 🛡️ Domínios autorizados a usar o proxy (whitelist) — sem barra final */
     ALLOWED_ORIGINS: [
         'https://seudominio.com',
         'https://www.seudominio.com',
@@ -24,7 +24,7 @@ const CONFIG = {
         'http://localhost:5500',
         'http://localhost:8080'
     ],
-    /** 🚫 User-Agents bloqueados (bots/scrapers) */
+    /** 🚫 User-Agents bloqueados (bots/scrapers) — apenas heurística auxiliar, não é controle de segurança */
     BLOCKED_AGENTS: [
         'Postman',
         'curl',
@@ -34,7 +34,15 @@ const CONFIG = {
         'axios',
         'insomnia',
         'bruno'
-    ]
+    ],
+    /** ⛔ Hosts de destino bloqueados (comparação exata de hostname, não substring) */
+    BLOCKED_HOSTS: [
+        'proxy.corsfix.com',
+        'api.allorigins.win',
+        'cors.isomorphic-git.org'
+    ],
+    /** 🔁 Máximo de redirects seguidos manualmente */
+    MAX_REDIRECTS: 5
 };
 
 /**
@@ -60,24 +68,21 @@ export default {
                 return this._errorResponse('🚫 Método não permitido. Use GET ou POST.', 405);
             }
 
-            // 📡 Identifica o cliente
-            const clientIP = request.headers.get('CF-Connecting-IP') ||
-                request.headers.get('X-Forwarded-For')?.split(',')[0] ||
-                'unknown';
+            // 📡 Identifica o cliente (apenas o header injetado pela própria Cloudflare é confiável)
+            const clientIP = request.headers.get('CF-Connecting-IP') || 'unknown';
 
             const origin = request.headers.get('Origin') || '';
             const userAgent = request.headers.get('User-Agent') || '';
 
-            // 🛡️ Verifica se a origem é autorizada
-            const isOriginAllowed = CONFIG.ALLOWED_ORIGINS.some(o => origin.startsWith(o));
-            if (!isOriginAllowed) {
+            // 🛡️ Verifica se a origem é autorizada (comparação exata, não startsWith)
+            if (!this._isOriginAllowed(origin)) {
                 return this._errorResponse(
                     '🔒 Origem não autorizada. Apenas domínios permitidos.',
                     403
                 );
             }
 
-            // 🤖 Bloqueia bots conhecidos
+            // 🤖 Bloqueia bots conhecidos (heurística auxiliar — não é a única barreira)
             const isBot = CONFIG.BLOCKED_AGENTS.some(agent =>
                 userAgent.toLowerCase().includes(agent.toLowerCase())
             );
@@ -96,14 +101,21 @@ export default {
                 return this._errorResponse('❌ URL de destino não fornecida. Use ?url=https://...', 400);
             }
 
-            if (!targetUrl.startsWith('http://') && !targetUrl.startsWith('https://')) {
+            let parsedTarget;
+            try {
+                parsedTarget = new URL(targetUrl);
+            } catch (_) {
                 return this._errorResponse('⚠️ URL inválida. Deve começar com http:// ou https://', 400);
             }
 
-            // ⛔ Previne proxy encadeado
-            const BLOCKED_PROXIES = ['proxy.corsfix.com', 'api.allorigins.win', 'cors.isomorphic-git.org'];
-            if (BLOCKED_PROXIES.some(p => targetUrl.includes(p))) {
-                return this._errorResponse('⛔ Proxy encadeado não permitido por segurança.', 403);
+            if (parsedTarget.protocol !== 'http:' && parsedTarget.protocol !== 'https:') {
+                return this._errorResponse('⚠️ URL inválida. Deve começar com http:// ou https://', 400);
+            }
+
+            // 🚫 Bloqueia hosts internos/privados e proxies encadeados (checagem exata de hostname)
+            const hostCheck = this._isHostBlocked(parsedTarget.hostname);
+            if (hostCheck) {
+                return this._errorResponse('⛔ Destino não permitido por segurança.', 403);
             }
 
             // ⏱️ Rate Limit (usa KV se disponível, senão fallback)
@@ -117,8 +129,12 @@ export default {
                 );
             }
 
-            // 🌐 Proxy da requisição
-            const response = await this._proxyRequest(targetUrl, request);
+            // 🌐 Proxy da requisição (com validação manual de cada redirect)
+            const response = await this._proxyRequest(parsedTarget.toString(), request);
+            if (response instanceof Response && response.status >= 300 && response._blockedRedirect) {
+                return this._errorResponse('⛔ Redirecionamento para destino não permitido.', 403);
+            }
+
             const responseData = await response.text();
 
             return this._successResponse(responseData, rateCheck.remaining);
@@ -127,6 +143,51 @@ export default {
             console.error('❌ Erro no proxy:', error);
             return this._errorResponse('💥 Erro interno do servidor. Tente novamente mais tarde.', 500);
         }
+    },
+
+    /**
+     * 🛡️ Verifica se a origem bate exatamente com um item da whitelist
+     * @param {string} origin - Header Origin da requisição
+     * @returns {boolean}
+     */
+    _isOriginAllowed(origin) {
+        if (!origin) return false;
+        try {
+            const originUrl = new URL(origin);
+            return CONFIG.ALLOWED_ORIGINS.some(allowed => {
+                const allowedUrl = new URL(allowed);
+                return originUrl.protocol === allowedUrl.protocol &&
+                    originUrl.host === allowedUrl.host;
+            });
+        } catch (_) {
+            return false;
+        }
+    },
+
+    /**
+     * ⛔ Verifica se o hostname de destino é bloqueado (proxies encadeados, loopback, redes privadas)
+     * @param {string} hostname - Hostname de destino
+     * @returns {boolean}
+     */
+    _isHostBlocked(hostname) {
+        const host = hostname.toLowerCase();
+        
+        if (CONFIG.BLOCKED_HOSTS.includes(host)) return true;
+        if (host === 'localhost' || host === '0.0.0.0' || host.endsWith('.local')) return true;
+
+        const ipv4 = host.match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/);
+        
+        if (ipv4) {
+            const [a, b] = [parseInt(ipv4[1], 10), parseInt(ipv4[2], 10)];
+            if (a === 127) return true;
+            if (a === 10) return true;
+            if (a === 192 && b === 168) return true;
+            if (a === 172 && b >= 16 && b <= 31) return true;
+            if (a === 169 && b === 254) return true;
+        }
+
+        if (host === '::1' || host.startsWith('fe80:') || host.startsWith('fc') || host.startsWith('fd')) return true;
+        return false;
     },
 
     /**
@@ -187,7 +248,7 @@ export default {
     },
 
     /**
-     * 🌐 Proxy da requisição
+     * 🌐 Proxy da requisição, seguindo redirects manualmente e validando cada host
      * @param {string} targetUrl - URL de destino
      * @param {Request} request - Requisição original
      * @returns {Promise<Response>}
@@ -199,25 +260,44 @@ export default {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
         });
 
+        let body;
+        let method = 'GET';
+
         if (request.method === 'POST') {
             try {
-                const body = await request.clone().text();
-                if (body) {
+                const raw = await request.clone().text();
+                if (raw) {
                     headers.set('Content-Type', 'application/json');
-                    return fetch(targetUrl, {
-                        method: 'POST',
-                        headers,
-                        body
-                    });
+                    body = raw;
+                    method = 'POST';
                 }
             } catch (_) { /* ignora */ }
         }
 
-        return fetch(targetUrl, {
-            method: 'GET',
-            headers,
-            redirect: 'follow'
-        });
+        let currentUrl = targetUrl;
+        for (let i = 0; i <= CONFIG.MAX_REDIRECTS; i++) {
+            const res = await fetch(currentUrl, {
+                method,
+                headers,
+                body,
+                redirect: 'manual'
+            });
+
+            if (res.status >= 300 && res.status < 400 && res.headers.get('Location')) {
+                const nextUrl = new URL(res.headers.get('Location'), currentUrl);
+                if (this._isHostBlocked(nextUrl.hostname)) {
+                    const blocked = new Response(null, { status: 403 });
+                    blocked._blockedRedirect = true;
+                    return blocked;
+                }
+                currentUrl = nextUrl.toString();
+                continue;
+            }
+
+            return res;
+        }
+
+        return this._errorResponse('⛔ Excesso de redirecionamentos.', 400);
     },
 
     /**
